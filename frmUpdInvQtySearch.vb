@@ -198,22 +198,29 @@ Public Class frmUpdInvQtySearch
         Dim filters As New List(Of String)
 
         If Not String.IsNullOrWhiteSpace(txtItemCode.Text) Then
-            filters.Add($"itemCode LIKE '%{txtItemCode.Text.Trim()}%'")
+            filters.Add($"itemCode LIKE '%{EscapeFilter(txtItemCode.Text.Trim())}%'")
         End If
         If Not String.IsNullOrWhiteSpace(txtItemDesc.Text) Then
-            filters.Add($"itemDesc LIKE '%{txtItemDesc.Text.Trim()}%'")
+            filters.Add($"itemDesc LIKE '%{EscapeFilter(txtItemDesc.Text.Trim())}%'")
         End If
         If cmbWarehouse.SelectedIndex > 0 Then
-            filters.Add($"warehouse = '{cmbWarehouse.SelectedItem}'")
+            filters.Add($"warehouse = '{EscapeFilter(cmbWarehouse.SelectedItem.ToString())}'")
         End If
         If cmbStatus.SelectedIndex > 0 Then
-            filters.Add($"status = '{cmbStatus.SelectedItem}'")
+            filters.Add($"status = '{EscapeFilter(cmbStatus.SelectedItem.ToString())}'")
         End If
 
         Dim expr = If(filters.Count > 0, String.Join(" AND ", filters), "")
         ds.DefaultView.RowFilter = expr
         UpdateStatusBar(ds.DefaultView.Count)
     End Sub
+
+    ''' <summary>
+    ''' Escapes single-quote characters for use inside a DataView RowFilter expression.
+    ''' </summary>
+    Private Shared Function EscapeFilter(value As String) As String
+        Return value.Replace("'", "''")
+    End Function
 
     Private Sub BtnClear_Click(sender As Object, e As EventArgs) Handles btnClear.Click
         txtItemCode.Clear()
