@@ -198,10 +198,10 @@ Public Class frmUpdInvQtySearch
         Dim filters As New List(Of String)
 
         If Not String.IsNullOrWhiteSpace(txtItemCode.Text) Then
-            filters.Add($"itemCode LIKE '%{EscapeFilter(txtItemCode.Text.Trim())}%'")
+            filters.Add($"itemCode LIKE '%{EscapeLikePattern(txtItemCode.Text.Trim())}%'")
         End If
         If Not String.IsNullOrWhiteSpace(txtItemDesc.Text) Then
-            filters.Add($"itemDesc LIKE '%{EscapeFilter(txtItemDesc.Text.Trim())}%'")
+            filters.Add($"itemDesc LIKE '%{EscapeLikePattern(txtItemDesc.Text.Trim())}%'")
         End If
         If cmbWarehouse.SelectedIndex > 0 Then
             filters.Add($"warehouse = '{EscapeFilter(cmbWarehouse.SelectedItem.ToString())}'")
@@ -211,15 +211,42 @@ Public Class frmUpdInvQtySearch
         End If
 
         Dim expr = If(filters.Count > 0, String.Join(" AND ", filters), "")
-        ds.DefaultView.RowFilter = expr
+        Try
+            ds.DefaultView.RowFilter = expr
+        Catch ex As Exception
+            ' A malformed filter should never crash the form; fall back to no filter.
+            ds.DefaultView.RowFilter = ""
+            MessageBox.Show("搜尋條件無效，已重設篩選。", "搜尋",
+                            MessageBoxButtons.OK, MessageBoxIcon.Warning)
+        End Try
         UpdateStatusBar(ds.DefaultView.Count)
     End Sub
 
     ''' <summary>
-    ''' Escapes single-quote characters for use inside a DataView RowFilter expression.
+    ''' Escapes single-quote characters for use inside a DataView RowFilter string literal.
     ''' </summary>
     Private Shared Function EscapeFilter(value As String) As String
         Return value.Replace("'", "''")
+    End Function
+
+    ''' <summary>
+    ''' Escapes a value for safe use inside a DataView RowFilter LIKE pattern. In addition to
+    ''' doubling single quotes, the LIKE wildcard/grouping characters ( * % [ ] ) are wrapped in
+    ''' brackets so user input is matched literally and cannot alter the filter or throw.
+    ''' </summary>
+    Private Shared Function EscapeLikePattern(value As String) As String
+        Dim sb As New System.Text.StringBuilder(value.Length)
+        For Each ch As Char In value
+            Select Case ch
+                Case "'"c
+                    sb.Append("''")
+                Case "["c, "]"c, "%"c, "*"c
+                    sb.Append("["c).Append(ch).Append("]"c)
+                Case Else
+                    sb.Append(ch)
+            End Select
+        Next
+        Return sb.ToString()
     End Function
 
     Private Sub BtnClear_Click(sender As Object, e As EventArgs) Handles btnClear.Click
