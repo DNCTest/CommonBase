@@ -63,25 +63,7 @@ Public Class frmUpdInvQtySearch
     ' Load demo / placeholder data
     '────────────────────────────────────────────
     Private Sub LoadDemoData()
-        Dim dt As New DataTable
-        dt.Columns.Add("itemCode", GetType(String))
-        dt.Columns.Add("itemDesc", GetType(String))
-        dt.Columns.Add("warehouse", GetType(String))
-        dt.Columns.Add("currentQty", GetType(Decimal))
-        dt.Columns.Add("unit", GetType(String))
-        dt.Columns.Add("lastUpdated", GetType(Date))
-        dt.Columns.Add("status", GetType(String))
-
-        dt.Rows.Add("ITM-0001", "A4 White Paper (500 Sheets)", "WH-A", 1200D, "PKT", New Date(2026, 6, 1), "Active")
-        dt.Rows.Add("ITM-0002", "Blue Ballpoint Pen (Box)", "WH-A", 85D, "BOX", New Date(2026, 6, 3), "Active")
-        dt.Rows.Add("ITM-0003", "Stapler Heavy Duty", "WH-B", 30D, "PCS", New Date(2026, 5, 15), "Active")
-        dt.Rows.Add("ITM-0004", "Manila Envelope (C4)", "WH-A", 500D, "PKT", New Date(2026, 5, 20), "Active")
-        dt.Rows.Add("ITM-0005", "Correction Tape Roll", "WH-B", 0D, "PCS", New Date(2026, 4, 1), "Inactive")
-        dt.Rows.Add("ITM-0006", "Plastic File Folder A4", "WH-C", 250D, "PCS", New Date(2026, 6, 10), "Active")
-        dt.Rows.Add("ITM-0007", "Whiteboard Marker (Red)", "WH-A", 60D, "PCS", New Date(2026, 6, 5), "Active")
-        dt.Rows.Add("ITM-0008", "Scissors Stainless 8 inch", "WH-B", 15D, "PCS", New Date(2026, 5, 22), "Active")
-        dt.Rows.Add("ITM-0009", "Transparent Tape 18mm", "WH-C", 0D, "ROL", New Date(2026, 3, 10), "Inactive")
-        dt.Rows.Add("ITM-0010", "Ring Binder A4 2-Ring", "WH-A", 180D, "PCS", New Date(2026, 6, 1), "Active")
+        Dim dt As DataTable = InvQtySearchLogic.BuildDemoData()
 
         dgvResults.DataSource = dt
         SetGridColumns()
@@ -195,32 +177,13 @@ Public Class frmUpdInvQtySearch
         Dim ds = TryCast(dgvResults.DataSource, DataTable)
         If ds Is Nothing Then Return
 
-        Dim filters As New List(Of String)
+        Dim warehouse = If(cmbWarehouse.SelectedIndex > 0, cmbWarehouse.SelectedItem.ToString(), String.Empty)
+        Dim status = If(cmbStatus.SelectedIndex > 0, cmbStatus.SelectedItem.ToString(), String.Empty)
 
-        If Not String.IsNullOrWhiteSpace(txtItemCode.Text) Then
-            filters.Add($"itemCode LIKE '%{EscapeFilter(txtItemCode.Text.Trim())}%'")
-        End If
-        If Not String.IsNullOrWhiteSpace(txtItemDesc.Text) Then
-            filters.Add($"itemDesc LIKE '%{EscapeFilter(txtItemDesc.Text.Trim())}%'")
-        End If
-        If cmbWarehouse.SelectedIndex > 0 Then
-            filters.Add($"warehouse = '{EscapeFilter(cmbWarehouse.SelectedItem.ToString())}'")
-        End If
-        If cmbStatus.SelectedIndex > 0 Then
-            filters.Add($"status = '{EscapeFilter(cmbStatus.SelectedItem.ToString())}'")
-        End If
-
-        Dim expr = If(filters.Count > 0, String.Join(" AND ", filters), "")
-        ds.DefaultView.RowFilter = expr
+        ds.DefaultView.RowFilter = InvQtySearchLogic.BuildRowFilter(
+            txtItemCode.Text, txtItemDesc.Text, warehouse, status)
         UpdateStatusBar(ds.DefaultView.Count)
     End Sub
-
-    ''' <summary>
-    ''' Escapes single-quote characters for use inside a DataView RowFilter expression.
-    ''' </summary>
-    Private Shared Function EscapeFilter(value As String) As String
-        Return value.Replace("'", "''")
-    End Function
 
     Private Sub BtnClear_Click(sender As Object, e As EventArgs) Handles btnClear.Click
         txtItemCode.Clear()

@@ -1,0 +1,11 @@
+## .NET build output
+[Bb]in/
+[Oo]bj/
+
+## User-specific files
+*.user
+
+## Test results
+[Tt]est[Rr]esult*/
+*.coverage
+*.coverage.xml
