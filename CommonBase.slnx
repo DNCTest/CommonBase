@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="CommonBase.Logic/CommonBase.Logic.vbproj" />
+  <Project Path="CommonBase.Tests/CommonBase.Tests.vbproj" />
+  <Project Path="CommonBase.vbproj" />
+</Solution>

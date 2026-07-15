@@ -10,6 +10,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="CommonBase.Logic\CommonBase.Logic.vbproj" />
+  </ItemGroup>
+
+  <!-- This project lives at the repo root, so exclude the sibling project folders
+       from its default source globs. -->
+  <ItemGroup>
+    <Compile Remove="CommonBase.Logic\**" />
+    <Compile Remove="CommonBase.Tests\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Import Include="System.Data" />
     <Import Include="System.Drawing" />
     <Import Include="System.Windows.Forms" />
