@@ -5,22 +5,6 @@ Imports System.Data
 Public Class frmUpdInvQtySearch
 
     '────────────────────────────────────────────
-    ' Colour palette
-    '────────────────────────────────────────────
-    Private Shared ReadOnly ColPrimary As Color = Color.FromArgb(28, 57, 101)     ' Deep navy
-    Private Shared ReadOnly ColSecondary As Color = Color.FromArgb(41, 128, 185)  ' Sky blue
-    Private Shared ReadOnly ColAccent As Color = Color.FromArgb(39, 174, 96)      ' Emerald
-    Private Shared ReadOnly ColDanger As Color = Color.FromArgb(192, 57, 43)      ' Red
-    Private Shared ReadOnly ColBackground As Color = Color.FromArgb(245, 247, 250)
-    Private Shared ReadOnly ColSurface As Color = Color.FromArgb(255, 255, 255)
-    Private Shared ReadOnly ColBorder As Color = Color.FromArgb(213, 219, 229)
-    Private Shared ReadOnly ColTextPrimary As Color = Color.FromArgb(44, 62, 80)
-    Private Shared ReadOnly ColTextSecondary As Color = Color.FromArgb(127, 140, 141)
-    Private Shared ReadOnly ColGridHeader As Color = Color.FromArgb(52, 73, 94)
-    Private Shared ReadOnly ColGridAlt As Color = Color.FromArgb(236, 243, 254)
-    Private Shared ReadOnly ColHighlight As Color = Color.FromArgb(174, 214, 241)
-
-    '────────────────────────────────────────────
     ' Form init
     '────────────────────────────────────────────
     Public Sub New()
@@ -37,17 +21,17 @@ Public Class frmUpdInvQtySearch
 
         ' DataGridView style
         With dgvResults
-            .BackgroundColor = ColSurface
-            .GridColor = ColBorder
+            .BackgroundColor = Theme.Surface
+            .GridColor = Theme.Border
             .BorderStyle = BorderStyle.None
             .RowHeadersVisible = False
-            .AlternatingRowsDefaultCellStyle.BackColor = ColGridAlt
-            .DefaultCellStyle.BackColor = ColSurface
-            .DefaultCellStyle.ForeColor = ColTextPrimary
-            .DefaultCellStyle.SelectionBackColor = ColHighlight
-            .DefaultCellStyle.SelectionForeColor = ColTextPrimary
+            .AlternatingRowsDefaultCellStyle.BackColor = Theme.GridAlt
+            .DefaultCellStyle.BackColor = Theme.Surface
+            .DefaultCellStyle.ForeColor = Theme.TextPrimary
+            .DefaultCellStyle.SelectionBackColor = Theme.Highlight
+            .DefaultCellStyle.SelectionForeColor = Theme.TextPrimary
             .DefaultCellStyle.Font = New Font("Segoe UI", 9)
-            .ColumnHeadersDefaultCellStyle.BackColor = ColGridHeader
+            .ColumnHeadersDefaultCellStyle.BackColor = Theme.GridHeader
             .ColumnHeadersDefaultCellStyle.ForeColor = Color.White
             .ColumnHeadersDefaultCellStyle.Font = New Font("Segoe UI Semibold", 9, FontStyle.Bold)
             .ColumnHeadersDefaultCellStyle.Padding = New Padding(6, 0, 0, 0)
@@ -57,6 +41,13 @@ Public Class frmUpdInvQtySearch
             .RowTemplate.Height = 30
             .CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal
         End With
+
+        ' Button hover effects
+        AttachHover(btnSearch, Theme.Secondary, Theme.SecondaryHover)
+        AttachHover(btnClear, Theme.TextSecondary, Theme.NeutralHover)
+        AttachHover(btnUpdate, Theme.Accent, Theme.AccentHover)
+        AttachHover(btnExport, Theme.Teal, Theme.TealHover)
+        AttachHover(btnClose, Theme.Danger, Theme.DangerHover)
     End Sub
 
     '────────────────────────────────────────────
@@ -118,16 +109,16 @@ Public Class frmUpdInvQtySearch
     Private Sub DgvResults_CellFormatting(sender As Object, e As DataGridViewCellFormattingEventArgs)
         If dgvResults.Columns(e.ColumnIndex).Name = "currentQty" AndAlso e.Value IsNot Nothing Then
             If CDec(e.Value) = 0 Then
-                e.CellStyle.ForeColor = Color.FromArgb(211, 84, 0)
+                e.CellStyle.ForeColor = Theme.ZeroQty
                 e.CellStyle.Font = New Font("Segoe UI", 9, FontStyle.Bold)
             End If
         End If
         If dgvResults.Columns(e.ColumnIndex).Name = "status" AndAlso e.Value IsNot Nothing Then
             If e.Value.ToString() = "Active" Then
-                e.CellStyle.ForeColor = Color.FromArgb(39, 174, 96)
+                e.CellStyle.ForeColor = Theme.Accent
                 e.CellStyle.Font = New Font("Segoe UI", 9, FontStyle.Bold)
             Else
-                e.CellStyle.ForeColor = Color.FromArgb(127, 140, 141)
+                e.CellStyle.ForeColor = Theme.TextSecondary
             End If
         End If
     End Sub
@@ -147,52 +138,18 @@ Public Class frmUpdInvQtySearch
         ' Header band
         Using br As New Drawing2D.LinearGradientBrush(
                 pnlHeader.Bounds,
-                ColPrimary,
-                Color.FromArgb(41, 82, 140),
+                Theme.Primary,
+                Theme.PrimaryGradientEnd,
                 Drawing2D.LinearGradientMode.Horizontal)
             e.Graphics.FillRectangle(br, pnlHeader.Bounds)
         End Using
     End Sub
 
     '────────────────────────────────────────────
-    ' Button flat hover effects
-    '────────────────────────────────────────────
-    Private Sub BtnSearch_MouseEnter(sender As Object, e As EventArgs) Handles btnSearch.MouseEnter
-        btnSearch.BackColor = Color.FromArgb(52, 152, 219)
-    End Sub
-    Private Sub BtnSearch_MouseLeave(sender As Object, e As EventArgs) Handles btnSearch.MouseLeave
-        btnSearch.BackColor = ColSecondary
-    End Sub
-    Private Sub BtnClear_MouseEnter(sender As Object, e As EventArgs) Handles btnClear.MouseEnter
-        btnClear.BackColor = Color.FromArgb(149, 165, 166)
-    End Sub
-    Private Sub BtnClear_MouseLeave(sender As Object, e As EventArgs) Handles btnClear.MouseLeave
-        btnClear.BackColor = Color.FromArgb(127, 140, 141)
-    End Sub
-    Private Sub BtnUpdate_MouseEnter(sender As Object, e As EventArgs) Handles btnUpdate.MouseEnter
-        btnUpdate.BackColor = Color.FromArgb(46, 204, 113)
-    End Sub
-    Private Sub BtnUpdate_MouseLeave(sender As Object, e As EventArgs) Handles btnUpdate.MouseLeave
-        btnUpdate.BackColor = ColAccent
-    End Sub
-    Private Sub BtnExport_MouseEnter(sender As Object, e As EventArgs) Handles btnExport.MouseEnter
-        btnExport.BackColor = Color.FromArgb(22, 160, 133)
-    End Sub
-    Private Sub BtnExport_MouseLeave(sender As Object, e As EventArgs) Handles btnExport.MouseLeave
-        btnExport.BackColor = Color.FromArgb(26, 188, 156)
-    End Sub
-    Private Sub BtnClose_MouseEnter(sender As Object, e As EventArgs) Handles btnClose.MouseEnter
-        btnClose.BackColor = Color.FromArgb(231, 76, 60)
-    End Sub
-    Private Sub BtnClose_MouseLeave(sender As Object, e As EventArgs) Handles btnClose.MouseLeave
-        btnClose.BackColor = ColDanger
-    End Sub
-
-    '────────────────────────────────────────────
     ' Button click handlers
     '────────────────────────────────────────────
     Private Sub BtnSearch_Click(sender As Object, e As EventArgs) Handles btnSearch.Click
-        Dim ds = TryCast(dgvResults.DataSource, DataTable)
+        Dim ds = GridTable()
         If ds Is Nothing Then Return
 
         Dim filters As New List(Of String)
@@ -230,7 +187,7 @@ Public Class frmUpdInvQtySearch
         dtpDateFrom.Value = Date.Today.AddMonths(-3)
         dtpDateTo.Value = Date.Today
 
-        Dim ds = TryCast(dgvResults.DataSource, DataTable)
+        Dim ds = GridTable()
         If ds IsNot Nothing Then
             ds.DefaultView.RowFilter = ""
             UpdateStatusBar(ds.DefaultView.Count)
@@ -238,15 +195,18 @@ Public Class frmUpdInvQtySearch
         txtItemCode.Focus()
     End Sub
 
+    ''' <summary>Returns the grid's bound DataTable, or Nothing if unset.</summary>
+    Private Function GridTable() As DataTable
+        Return TryCast(dgvResults.DataSource, DataTable)
+    End Function
+
     Private Sub BtnUpdate_Click(sender As Object, e As EventArgs) Handles btnUpdate.Click
         If dgvResults.SelectedRows.Count = 0 Then
-            MessageBox.Show("請先選擇要更新的記錄。", "提示",
-                            MessageBoxButtons.OK, MessageBoxIcon.Information)
+            ShowInfo("請先選擇要更新的記錄。", "提示")
             Return
         End If
         ' Placeholder – wire to real update logic
-        MessageBox.Show($"已選取 {dgvResults.SelectedRows.Count} 筆記錄，準備更新。",
-                        "更新庫存數量", MessageBoxButtons.OK, MessageBoxIcon.Information)
+        ShowInfo($"已選取 {dgvResults.SelectedRows.Count} 筆記錄，準備更新。", "更新庫存數量")
     End Sub
 
     Private Sub BtnExport_Click(sender As Object, e As EventArgs) Handles btnExport.Click
@@ -255,7 +215,7 @@ Public Class frmUpdInvQtySearch
             sfd.FileName = $"InvQty_{Date.Today:yyyyMMdd}"
             If sfd.ShowDialog() = DialogResult.OK Then
                 ExportToCsv(sfd.FileName)
-                MessageBox.Show("匯出成功！", "匯出", MessageBoxButtons.OK, MessageBoxIcon.Information)
+                ShowInfo("匯出成功！", "匯出")
             End If
         End Using
     End Sub
