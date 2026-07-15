@@ -116,7 +116,8 @@ Public Class frmUpdInvQtySearch
     ' Cell formatting – zero qty in amber
     '────────────────────────────────────────────
     Private Sub DgvResults_CellFormatting(sender As Object, e As DataGridViewCellFormattingEventArgs)
-        If dgvResults.Columns(e.ColumnIndex).Name = "currentQty" AndAlso e.Value IsNot Nothing Then
+        If dgvResults.Columns(e.ColumnIndex).Name = "currentQty" AndAlso
+           e.Value IsNot Nothing AndAlso Not IsDBNull(e.Value) AndAlso IsNumeric(e.Value) Then
             If CDec(e.Value) = 0 Then
                 e.CellStyle.ForeColor = Color.FromArgb(211, 84, 0)
                 e.CellStyle.Font = New Font("Segoe UI", 9, FontStyle.Bold)
@@ -211,7 +212,14 @@ Public Class frmUpdInvQtySearch
         End If
 
         Dim expr = If(filters.Count > 0, String.Join(" AND ", filters), "")
-        ds.DefaultView.RowFilter = expr
+        Try
+            ds.DefaultView.RowFilter = expr
+        Catch ex As Exception When TypeOf ex Is EvaluateException _
+                              OrElse TypeOf ex Is SyntaxErrorException
+            MessageBox.Show($"搜尋條件無效：{Environment.NewLine}{ex.Message}",
+                            "搜尋", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Return
+        End Try
         UpdateStatusBar(ds.DefaultView.Count)
     End Sub
 
@@ -253,10 +261,19 @@ Public Class frmUpdInvQtySearch
         Using sfd As New SaveFileDialog()
             sfd.Filter = "CSV 檔案 (*.csv)|*.csv"
             sfd.FileName = $"InvQty_{Date.Today:yyyyMMdd}"
-            If sfd.ShowDialog() = DialogResult.OK Then
+            If sfd.ShowDialog() <> DialogResult.OK Then Return
+
+            Try
                 ExportToCsv(sfd.FileName)
-                MessageBox.Show("匯出成功！", "匯出", MessageBoxButtons.OK, MessageBoxIcon.Information)
-            End If
+            Catch ex As Exception When TypeOf ex Is IO.IOException _
+                                  OrElse TypeOf ex Is UnauthorizedAccessException _
+                                  OrElse TypeOf ex Is Security.SecurityException
+                MessageBox.Show($"匯出失敗：{Environment.NewLine}{ex.Message}",
+                                "匯出", MessageBoxButtons.OK, MessageBoxIcon.Error)
+                Return
+            End Try
+
+            MessageBox.Show("匯出成功！", "匯出", MessageBoxButtons.OK, MessageBoxIcon.Information)
         End Using
     End Sub
 
